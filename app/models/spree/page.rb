@@ -15,6 +15,7 @@ class Spree::Page < ActiveRecord::Base
   attr_accessible :title, :slug, :body, :meta_title, :meta_keywords, :meta_description, :layout, :foreign_link, :position, :show_in_sidebar, :show_in_header, :show_in_footer, :visible, :render_layout_as_partial
 
   def self.by_slug(slug)
+    slug = self.redefine_static_slug(slug)
     slug = StaticPage::remove_spree_mount_point(slug)
     pages = self.arel_table
     query = pages[:slug].eq(slug).or(pages[:slug].eq("/#{slug}"))
@@ -31,6 +32,15 @@ class Spree::Page < ActiveRecord::Base
   def link
     foreign_link.blank? ? slug : foreign_link
   end
+
+  def self.redefine_static_slug(slug)
+    if slug.include? "auto-locksmith"
+      slug.slice!(0, slug.rindex("/"))
+    else
+      slug
+    end
+  end  
+
 
 private
 
@@ -50,4 +60,7 @@ private
   def not_using_foreign_link?
     foreign_link.blank?
   end
+
+
+
 end
